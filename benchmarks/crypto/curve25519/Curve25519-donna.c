@@ -54,6 +54,9 @@
 #define inline __inline
 #endif
 
+#define __blinded [[clang::annotate_type("blinded")]]
+
+
 typedef uint8_t u8;
 typedef int32_t s32;
 typedef int64_t limb;
@@ -68,7 +71,7 @@ typedef int64_t limb;
 
 /* Sum two numbers: output += in */
 static void fsum(limb *output, const limb *in) {
-  __attribute__((section(".public"))) static unsigned i;
+  static unsigned i;
   for (i = 0; i < 10; i += 2) {
     output[0+i] = output[0+i] + in[0+i];
     output[1+i] = output[1+i] + in[1+i];
@@ -78,7 +81,7 @@ static void fsum(limb *output, const limb *in) {
 /* Find the difference of two numbers: output = in - output
  * (note the order of the arguments!). */
 static void fdifference(limb *output, const limb *in) {
-  __attribute__((section(".public"))) static unsigned i;
+   static unsigned i;
   for (i = 0; i < 10; ++i) {
     output[i] = in[i] - output[i];
   }
@@ -86,7 +89,7 @@ static void fdifference(limb *output, const limb *in) {
 
 /* Multiply a number by a scalar: output = in * scalar */
 static void fscalar_product(limb *output, const limb *in, const limb scalar) {
-  __attribute__((section(".public"))) static unsigned i;
+   static unsigned i;
   for (i = 0; i < 10; ++i) {
     output[i] = in[i] * scalar;
   }
@@ -250,13 +253,13 @@ static inline limb
 div_by_2_26(const limb v)
 {
   /* High word of v; no shift needed. */
-  __attribute__((section(".secret"))) static uint32_t highword;
+  static uint32_t __blinded highword;
   highword = (uint32_t) (((uint64_t) v) >> 32);
   /* Set to all 1s if v was negative; else set to 0s. */
-  __attribute__((section(".secret"))) static int32_t sign;
+  static int32_t __blinded sign;
   sign = ((int32_t) highword) >> 31;
   /* Set to 0x3ffffff if v was negative; else set to 0. */
-  __attribute__((section(".secret"))) static  int32_t roundoff;
+  static int32_t __blinded roundoff;
   roundoff = ((uint32_t) sign) >> 6;
   /* Should return v / (1<<26) */
   return (v + roundoff) >> 26;
@@ -269,13 +272,13 @@ static inline limb
 div_by_2_25(const limb v)
 {
   /* High word of v; no shift needed*/
-  __attribute__((section(".secret"))) static uint32_t highword;
+  static uint32_t __blinded highword;
   highword = (uint32_t) (((uint64_t) v) >> 32);
   /* Set to all 1s if v was negative; else set to 0s. */
-  __attribute__((section(".secret"))) static int32_t sign;
+  static int32_t __blinded sign;
   sign = ((int32_t) highword) >> 31;
   /* Set to 0x1ffffff if v was negative; else set to 0. */
-  __attribute__((section(".secret"))) static int32_t roundoff;
+  static int32_t __blinded roundoff;
   roundoff = ((uint32_t) sign) >> 7;
   /* Should return v / (1<<25) */
   return (v + roundoff) >> 25;
@@ -285,12 +288,12 @@ div_by_2_25(const limb v)
  *
  * On entry: |output[i]| < 280*2^54 */
 static void freduce_coefficients(limb *output) {
-  __attribute__((section(".public"))) static unsigned i;
+   static unsigned i;
 
   output[10] = 0;
 
   for (i = 0; i < 10; i += 2) {
-    __attribute__((section(".secret"))) static limb over;
+    static limb __blinded over;
     over = div_by_2_26(output[i]);
     /* The entry condition (that |output[i]| < 280*2^54) means that over is, at
      * most, 280*2^28 in the first iteration of this loop. This is added to the
@@ -319,7 +322,7 @@ static void freduce_coefficients(limb *output) {
   /* Now output[1..9] are reduced, and |output[0]| < 2^26 + 19*281*2^29
    * So |over| will be no more than 2^16. */
   {
-    __attribute__((section(".secret"))) static limb over;
+    static limb __blinded over;
     over = div_by_2_26(output[0]);
     output[0] -= over << 26;
     output[1] += over;
@@ -337,7 +340,7 @@ static void freduce_coefficients(limb *output) {
  * (indeed, one need only provide storage for 10 limbs) and |output[i]| < 2^26. */
 static void
 fmul(limb *output, const limb *in, const limb *in2) {
-  __attribute__((section(".secret"))) static limb t[19];
+  static limb __blinded t[19];
   fproduct(t, in, in2);
   /* |t[i]| < 14*2^54 */
   freduce_degree(t);
@@ -419,7 +422,7 @@ static void fsquare_inner(limb *output, const limb *in) {
  * need only provide storage for 10 limbs) and |out[i]| < 2^26. */
 static void
 fsquare(limb *output, const limb *in) {
-  __attribute__((section(".secret"))) static limb t[19];
+  static limb __blinded t[19];
   fsquare_inner(t, in);
   /* |t[i]| < 14*2^54 because the largest product of two limbs will be <
    * 2^(27+27) and fsquare_inner adds together, at most, 14 of those
@@ -480,10 +483,10 @@ static s32 s32_gte(s32 a, s32 b) {
  * On entry: |input_limbs[i]| < 2^26 */
 static void
 fcontract(u8 *output, limb *input_limbs) {
-  __attribute__((section(".public"))) static int i;
-  __attribute__((section(".public"))) static int j;
-  __attribute__((section(".secret"))) static s32 input[10];
-  __attribute__((section(".secret"))) static s32 mask;
+   static int i;
+   static int j;
+   static s32 __blinded input[10];
+   static s32 __blinded mask;
 
   /* |input_limbs[i]| < 2^26, so it's valid to convert to an s32. */
   for (i = 0; i < 10; i++) {
@@ -495,17 +498,17 @@ fcontract(u8 *output, limb *input_limbs) {
       if ((i & 1) == 1) {
         /* This calculation is a time-invariant way to make input[i]
          * non-negative by borrowing from the next-larger limb. */
-        __attribute__((section(".secret"))) static s32 mask;
+        static s32 __blinded mask;
         mask = input[i] >> 31;
-        __attribute__((section(".secret"))) static s32 carry;
+        static s32 __blinded carry;
         carry = -((input[i] & mask) >> 25);
         input[i] = input[i] + (carry << 25);
         input[i+1] = input[i+1] - carry;
       } else {
-        __attribute__((section(".secret"))) static s32 mask;
+        static s32 __blinded mask;
         mask = input[i] >> 31;
-        __attribute__((section(".secret"))) static s32 carry;
-        carry = -((input[i] & mask) >> 26);
+        static s32 __blinded carry;
+        carry = -((input[i] & mask) >> 26); 
         input[i] = input[i] + (carry << 26);
         input[i+1] = input[i+1] - carry;
       }
@@ -514,9 +517,9 @@ fcontract(u8 *output, limb *input_limbs) {
     /* There's no greater limb for input[9] to borrow from, but we can multiply
      * by 19 and borrow from input[0], which is valid mod 2^255-19. */
     {
-      __attribute__((section(".secret"))) static s32 mask;
+      static s32 __blinded mask;
       mask = input[9] >> 31;
-      __attribute__((section(".secret"))) static s32 carry;
+      static s32 __blinded carry;
       carry = -((input[9] & mask) >> 25);
       input[9] = input[9] + (carry << 25);
       input[0] = input[0] - (carry * 19);
@@ -540,9 +543,9 @@ fcontract(u8 *output, limb *input_limbs) {
      through input[9] were all zero.  In that case, input[1] is now 2^25 - 1,
      and this last borrow-propagation step will leave input[1] non-negative. */
   {
-    __attribute__((section(".secret"))) static s32 mask;
+    static s32 __blinded mask;
     mask = input[0] >> 31;
-    __attribute__((section(".secret"))) static s32 carry;
+    static s32 __blinded carry;
     carry = -((input[0] & mask) >> 26);
     input[0] = input[0] + (carry << 26);
     input[1] = input[1] - carry;
@@ -553,12 +556,12 @@ fcontract(u8 *output, limb *input_limbs) {
   for (j = 0; j < 2; j++) {
     for (i = 0; i < 9; i++) {
       if ((i & 1) == 1) {
-        __attribute__((section(".secret"))) static s32 carry;
+        static s32 __blinded carry;
         carry = input[i] >> 25;
         input[i] &= 0x1ffffff;
         input[i+1] += carry;
       } else {
-        __attribute__((section(".secret"))) static s32 carry;
+        static s32 __blinded carry;
         carry= input[i] >> 26;
         input[i] &= 0x3ffffff;
         input[i+1] += carry;
@@ -566,7 +569,7 @@ fcontract(u8 *output, limb *input_limbs) {
     }
 
     {
-      __attribute__((section(".secret"))) static s32 carry;
+      static s32 __blinded carry;
       carry = input[9] >> 25;
       input[9] &= 0x1ffffff;
       input[0] += 19*carry;
@@ -648,7 +651,7 @@ static void fmonty(limb *x2, limb *z2,  /* output 2Q */
                    limb *x, limb *z,    /* input Q */
                    limb *xprime, limb *zprime,  /* input Q' */
                    const limb *qmqp /* input Q - Q' */) {
-  __attribute__((section(".secret"))) static limb origx[10], origxprime[10], zzz[19], xx[19], zz[19], xxprime[19],
+  static limb __blinded origx[10], origxprime[10], zzz[19], xx[19], zz[19], xxprime[19],
         zzprime[19], zzzprime[19], xxxprime[19];
 
   memcpy(origx, x, 10 * sizeof(limb));
@@ -728,13 +731,13 @@ static void fmonty(limb *x2, limb *z2,  /* output 2Q */
  * and all all values in a[0..9],b[0..9] must have magnitude less than
  * INT32_MAX. */
 static void
-swap_conditional(limb a[19], limb b[19], limb iswap) {
-  __attribute__((section(".public"))) static unsigned i;
-  __attribute__((section(".secret"))) static s32 swap;
+swap_conditional(limb a[19], limb b[19], volatile limb iswap) {
+  static unsigned i;
+  static s32 swap;
   swap = (s32) -iswap;
 
   for (i = 0; i < 10; ++i) {
-    __attribute__((section(".secret"))) static s32 x;
+    static s32 __blinded x; 
     x = swap & ( ((s32)a[i]) ^ ((s32)b[i]) );
     a[i] = ((s32)a[i]) ^ x;
     b[i] = ((s32)b[i]) ^ x;
@@ -748,20 +751,20 @@ swap_conditional(limb a[19], limb b[19], limb iswap) {
  *   q: a point of the curve (short form) */
 static void
 cmult(limb *resultx, limb *resultz, const u8 *n, const limb *q) {
-  __attribute__((section(".secret"))) static limb a[19] = {0}, b[19] = {1}, c[19] = {1}, d[19] = {0};
-  __attribute__((section(".public"))) static limb *nqpqx = a, *nqpqz = b, *nqx = c, *nqz = d, *t;
-  __attribute__((section(".secret"))) static limb e[19] = {0}, f[19] = {1}, g[19] = {0}, h[19] = {1};
-  __attribute__((section(".public"))) static limb *nqpqx2 = e, *nqpqz2 = f, *nqx2 = g, *nqz2 = h;
+  static limb __blinded a[19] = {0}, b[19] = {1}, c[19] = {1}, d[19] = {0};
+  static limb *nqpqx = a, *nqpqz = b, *nqx = c, *nqz = d, *t;
+  static limb __blinded e[19] = {0}, f[19] = {1}, g[19] = {0}, h[19] = {1};
+  static limb *nqpqx2 = e, *nqpqz2 = f, *nqx2 = g, *nqz2 = h;
 
-  __attribute__((section(".public"))) static unsigned i, j;
+   static unsigned i, j; 
 
   memcpy(nqpqx, q, sizeof(limb) * 10);
 
   for (i = 0; i < 32; ++i) {
-    __attribute__((section(".secret"))) static u8 byte;
+    static u8 __blinded byte;
     byte = n[31 - i];
     for (j = 0; j < 8; ++j) {
-      __attribute__((section(".secret"))) static limb bit;
+      static volatile limb bit;
       bit = byte >> 7;
 
       swap_conditional(nqx, nqpqx, bit);
@@ -800,17 +803,17 @@ cmult(limb *resultx, limb *resultz, const u8 *n, const limb *q) {
 // -----------------------------------------------------------------------------
 static void
 crecip(limb *out, const limb *z) {
-  __attribute__((section(".secret"))) static limb z2[10];
-  __attribute__((section(".secret"))) static limb z9[10];
-  __attribute__((section(".secret"))) static limb z11[10];
-  __attribute__((section(".secret"))) static limb z2_5_0[10];
-  __attribute__((section(".secret"))) static limb z2_10_0[10];
-  __attribute__((section(".secret"))) static limb z2_20_0[10];
-  __attribute__((section(".secret"))) static limb z2_50_0[10];
-  __attribute__((section(".secret"))) static limb z2_100_0[10];
-  __attribute__((section(".secret"))) static limb t0[10];
-  __attribute__((section(".secret"))) static limb t1[10];
-  __attribute__((section(".public"))) static int i;
+  static limb __blinded z2[10];
+  static limb __blinded z9[10];
+  static limb __blinded z11[10];
+  static limb __blinded z2_5_0[10];
+  static limb __blinded z2_10_0[10];
+  static limb __blinded z2_20_0[10];
+  static limb __blinded z2_50_0[10];
+  static limb __blinded z2_100_0[10];
+  static limb __blinded t0[10];
+  static limb __blinded t1[10];
+  int i;
 
   /* 2 */ fsquare(z2,z);
   /* 4 */ fsquare(t1,z2);
@@ -867,9 +870,9 @@ crecip(limb *out, const limb *z) {
 
 int
 curve25519_donna(u8 *mypublic, const u8 *secret, const u8 *basepoint) {
-  __attribute__((section(".secret"))) static limb bp[10], x[10], z[11], zmone[10];
-  __attribute__((section(".secret"))) static uint8_t e[32];
-  __attribute__((section(".public"))) static int i;
+  static limb __blinded bp[10], x[10], z[11],  zmone[10];
+  static uint8_t __blinded e[32];
+  static int i;
 
   for (i = 0; i < 32; ++i) e[i] = secret[i];
   e[0] &= 248;

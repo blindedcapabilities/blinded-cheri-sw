@@ -131,7 +131,7 @@
 
 #  define htobe32(x)                                                           \
     (__extension__({                                                           \
-      static __attribute__((section(".secret"))) uint32_t _temp;               \
+      static uint32_t __blinded _temp;               \
       _temp = (x);                                                             \
       ((_temp >> 24) & 0x000000FF) | ((_temp >> 8) & 0x0000FF00) |             \
           ((_temp << 8) & 0x00FF0000) | ((_temp << 24) & 0xFF000000);          \
@@ -142,9 +142,9 @@
 #  define le64toh(x) (x)
 #  define htobe64(x)                                                           \
     (__extension__({                                                           \
-      static __attribute__((section(".secret"))) uint64_t __temp;              \
-      static __attribute__((section(".secret"))) uint32_t __low;               \
-      static __attribute__((section(".secret"))) uint32_t __high;              \
+      static uint64_t __blinded __temp;              \
+      static uint32_t __blinded __low;               \
+      static uint32_t __blinded __high;              \
       __temp = (x);                                                            \
       __low = htobe32((uint32_t)__temp);                                       \
       __high = htobe32((uint32_t)(__temp >> 32));                              \
@@ -162,19 +162,19 @@
  * accesses, via memcpy. */
 
 inline static uint16_t load16(uint8_t *b) {
-  static __attribute__((section(".secret"))) uint16_t x;
+  static uint16_t __blinded x;
   memcpy(&x, b, 2);
   return x;
 }
 
 inline static uint32_t load32(uint8_t *b) {
-  static __attribute__((section(".secret"))) uint32_t x;
+  static uint32_t __blinded x;
   memcpy(&x, b, 4);
   return x;
 }
 
 inline static uint64_t load64(uint8_t *b) {
-  static __attribute__((section(".secret"))) uint64_t x;
+  static uint64_t __blinded x;
   memcpy(&x, b, 8);
   return x;
 }

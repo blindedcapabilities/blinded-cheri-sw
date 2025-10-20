@@ -24,6 +24,8 @@
 
 #include "Hacl_Hash_SHA2.h"
 
+#define __blinded [[clang::annotate_type("blinded")]]
+
 __attribute__((section(".public"))) static uint32_t
 h256[8U] =
   {
@@ -62,27 +64,27 @@ void Hacl_Hash_Core_SHA2_init_256(uint32_t *s)
 
 static void update_256(uint32_t *hash, uint8_t *block)
 {
-  __attribute__((section(".secret"))) static uint32_t hash1[8U] = { 0U };
-  __attribute__((section(".secret"))) static uint32_t computed_ws[64U] = { 0U };
+  static uint32_t __blinded hash1[8U] = { 0U };
+  static uint32_t __blinded computed_ws[64U] = { 0U };
   for (uint32_t i = (uint32_t)0U; i < (uint32_t)64U; i++)
   {
     if (i < (uint32_t)16U)
     {
      uint8_t *b;
       b = block + i * (uint32_t)4U;
-      __attribute__((section(".secret"))) static uint32_t u;
+      static uint32_t __blinded u;
       u = load32_be(b);
       computed_ws[i] = u;
     }
     else
     {
-      __attribute__((section(".secret"))) static uint32_t t16;
-      __attribute__((section(".secret"))) static uint32_t t15;
-      __attribute__((section(".secret"))) static uint32_t t7;
-      __attribute__((section(".secret"))) static uint32_t t2;
-      __attribute__((section(".secret"))) static uint32_t s1;
-      __attribute__((section(".secret"))) static uint32_t s0;
-      __attribute__((section(".secret"))) static uint32_t w;
+      static uint32_t __blinded t16;
+      static uint32_t __blinded t15;
+      static uint32_t __blinded t7;
+      static uint32_t __blinded t2;
+      static uint32_t __blinded s1;
+      static uint32_t __blinded s0;
+      static uint32_t __blinded w;
       t16 = computed_ws[i - (uint32_t)16U];
       t15 = computed_ws[i - (uint32_t)15U];
       t7 = computed_ws[i - (uint32_t)7U];
@@ -100,17 +102,17 @@ static void update_256(uint32_t *hash, uint8_t *block)
   memcpy(hash1, hash, (uint32_t)8U * sizeof (uint32_t));
   for (uint32_t i = (uint32_t)0U; i < (uint32_t)64U; i++)
   {
-    __attribute__((section(".secret"))) static uint32_t a0;
-    __attribute__((section(".secret"))) static uint32_t b0;
-    __attribute__((section(".secret"))) static uint32_t c0;
-    __attribute__((section(".secret"))) static uint32_t d0;
-    __attribute__((section(".secret"))) static uint32_t e0;
-    __attribute__((section(".secret"))) static uint32_t f0;
-    __attribute__((section(".secret"))) static uint32_t g0;
-    __attribute__((section(".secret"))) static uint32_t h02;
-    __attribute__((section(".secret"))) static uint32_t w;
-    __attribute__((section(".secret"))) static uint32_t t1;
-    __attribute__((section(".secret"))) static uint32_t t2;
+    static uint32_t __blinded a0;
+    static uint32_t __blinded b0;
+    static uint32_t __blinded c0;
+    static uint32_t __blinded d0;
+    static uint32_t __blinded e0;
+    static uint32_t __blinded f0;
+    static uint32_t __blinded g0;
+    static uint32_t __blinded h02;
+    static uint32_t __blinded w;
+    static uint32_t __blinded t1;
+    static uint32_t __blinded t2;
     a0 = hash1[0U];
     b0 = hash1[1U];
     c0 = hash1[2U];
@@ -143,8 +145,8 @@ static void update_256(uint32_t *hash, uint8_t *block)
   }
   for (uint32_t i = (uint32_t)0U; i < (uint32_t)8U; i++)
   {
-    __attribute__((section(".secret"))) static uint32_t xi;
-    __attribute__((section(".secret"))) static uint32_t yi;
+    static uint32_t __blinded xi;
+    static uint32_t __blinded yi;
     xi = hash[i];
     yi = hash1[i];
     hash[i] = xi + yi;
@@ -218,7 +220,7 @@ Hacl_Hash_SHA2_update_last_256(
       % (uint32_t)64U
     + (uint32_t)8U;
   uint32_t tmp_len = rest_len + pad_len;
-  __attribute__((section(".secret"))) static uint8_t tmp_twoblocks[128U] = { 0U };
+  static uint8_t __blinded tmp_twoblocks[128U] = { 0U };
   uint8_t *tmp = tmp_twoblocks;
   uint8_t *tmp_rest = tmp;
   uint8_t *tmp_pad = tmp + rest_len;
@@ -229,7 +231,7 @@ Hacl_Hash_SHA2_update_last_256(
 
 void Hacl_Hash_SHA2_hash_256(uint8_t *input, uint32_t input_len, uint8_t *dst)
 {
-  __attribute__((section(".secret"))) static uint32_t
+  static uint32_t __blinded
   scrut[8U] =
     {
       (uint32_t)0x6a09e667U, (uint32_t)0xbb67ae85U, (uint32_t)0x3c6ef372U, (uint32_t)0xa54ff53aU,

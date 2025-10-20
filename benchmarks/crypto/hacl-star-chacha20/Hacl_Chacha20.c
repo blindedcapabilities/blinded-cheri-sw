@@ -24,6 +24,8 @@
 
 #include "Hacl_Chacha20.h"
 
+#define __blinded [[clang::annotate_type("blinded")]]
+
 const
 uint32_t
 Hacl_Impl_Chacha20_Vec_chacha20_constants[4U] =
@@ -31,30 +33,30 @@ Hacl_Impl_Chacha20_Vec_chacha20_constants[4U] =
 
 static inline void quarter_round(uint32_t *st, uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 {
-  __attribute__((section(".secret"))) static uint32_t sta;
-  __attribute__((section(".secret"))) static uint32_t stb0;
-  __attribute__((section(".secret"))) static uint32_t std0;
-  __attribute__((section(".secret"))) static uint32_t sta10;
-  __attribute__((section(".secret"))) static uint32_t std10;
-  __attribute__((section(".secret"))) static uint32_t std2;
-  __attribute__((section(".secret"))) static uint32_t sta0;
-  __attribute__((section(".secret"))) static uint32_t stb1;
-  __attribute__((section(".secret"))) static uint32_t std3;
-  __attribute__((section(".secret"))) static uint32_t sta11;
-  __attribute__((section(".secret"))) static uint32_t std11;
-  __attribute__((section(".secret"))) static uint32_t std20;
-  __attribute__((section(".secret"))) static uint32_t sta2;
-  __attribute__((section(".secret"))) static uint32_t stb2;
-  __attribute__((section(".secret"))) static uint32_t std4;
-  __attribute__((section(".secret"))) static uint32_t sta12;
-  __attribute__((section(".secret"))) static uint32_t std12;
-  __attribute__((section(".secret"))) static uint32_t std21;
-  __attribute__((section(".secret"))) static uint32_t sta3;
-  __attribute__((section(".secret"))) static uint32_t stb;
-  __attribute__((section(".secret"))) static uint32_t std;
-  __attribute__((section(".secret"))) static uint32_t sta1;
-  __attribute__((section(".secret"))) static uint32_t std1;
-  __attribute__((section(".secret"))) static uint32_t std22;
+  static uint32_t __blinded sta;
+  static uint32_t __blinded stb0;
+  static uint32_t __blinded std0;
+  static uint32_t __blinded sta10;
+  static uint32_t __blinded std10;
+  static uint32_t __blinded std2;
+  static uint32_t __blinded sta0;
+  static uint32_t __blinded stb1;
+  static uint32_t __blinded std3;
+  static uint32_t __blinded sta11;
+  static uint32_t __blinded std11;
+  static uint32_t __blinded std20; 
+  static uint32_t __blinded sta2;
+  static uint32_t __blinded stb2;
+  static uint32_t __blinded std4;
+  static uint32_t __blinded sta12;
+  static uint32_t __blinded std12;
+  static uint32_t __blinded std21;
+  static uint32_t __blinded sta3;
+  static uint32_t __blinded stb;
+  static uint32_t __blinded std;
+  static uint32_t __blinded sta1;
+  static uint32_t __blinded std1;
+  static uint32_t __blinded std22;
   sta = st[a];
   stb0 = st[b];
   std0 = st[d];
@@ -124,7 +126,7 @@ static inline void chacha20_core(uint32_t *k, uint32_t *ctx, uint32_t ctr)
   for (uint32_t i = (uint32_t)0U; i < (uint32_t)16U; i++)
   {
     uint32_t *os = k;
-    __attribute__((section(".secret"))) static uint32_t x;
+    static uint32_t  __blinded x;
     x = k[i] + ctx[i];
     os[i] = x;
   }
@@ -143,7 +145,7 @@ Hacl_Impl_Chacha20_chacha20_init(uint32_t *ctx, uint8_t *k, uint8_t *n, uint32_t
   for (uint32_t i = (uint32_t)0U; i < (uint32_t)4U; i++)
   {
     uint32_t *os = uu____0;
-    __attribute__((section(".secret"))) static uint32_t x;
+    static uint32_t __blinded x;
     x = chacha20_constants[i];
     os[i] = x;
   }
@@ -152,11 +154,11 @@ Hacl_Impl_Chacha20_chacha20_init(uint32_t *ctx, uint8_t *k, uint8_t *n, uint32_t
   {
     uint32_t *os = uu____1;
     uint8_t *bj = k + i * (uint32_t)4U;
-    __attribute__((section(".secret"))) static uint32_t u;
+    static uint32_t __blinded u;
     u = load32_le(bj);
-    __attribute__((section(".secret"))) static uint32_t r;
+    static uint32_t __blinded r;
     r = u;
-    __attribute__((section(".secret"))) static uint32_t x;
+    static uint32_t __blinded x;
     x = r;
     os[i] = x;
   }
@@ -166,11 +168,11 @@ Hacl_Impl_Chacha20_chacha20_init(uint32_t *ctx, uint8_t *k, uint8_t *n, uint32_t
   {
     uint32_t *os = uu____2;
     uint8_t *bj = n + i * (uint32_t)4U;
-    __attribute__((section(".secret"))) static uint32_t u;
+    static uint32_t __blinded u;
     u = load32_le(bj);
-    __attribute__((section(".secret"))) static uint32_t r;
+    static uint32_t __blinded r;
     r = u;
-    __attribute__((section(".secret"))) static uint32_t x;
+    static uint32_t __blinded x;
     x = r;
     os[i] = x;
   }
@@ -184,25 +186,25 @@ Hacl_Impl_Chacha20_chacha20_encrypt_block(
   uint8_t *text
 )
 {
-  __attribute__((section(".secret"))) static uint32_t k[16U] = { 0U };
+  static uint32_t __blinded k[16U] = { 0U };
   chacha20_core(k, ctx, incr);
-  __attribute__((section(".secret"))) static uint32_t bl[16U] = { 0U };
+  static uint32_t __blinded bl[16U] = { 0U };
   for (uint32_t i = (uint32_t)0U; i < (uint32_t)16U; i++)
   {
     uint32_t *os = bl;
     uint8_t *bj = text + i * (uint32_t)4U;
-    __attribute__((section(".secret"))) static uint32_t u;
+    static uint32_t __blinded u;
     u = load32_le(bj);
-    __attribute__((section(".secret"))) static uint32_t r;
+    static uint32_t __blinded r;
     r = u;
-    __attribute__((section(".secret"))) static uint32_t x;
+    static uint32_t __blinded x;
     x = r;
     os[i] = x;
   }
   for (uint32_t i = (uint32_t)0U; i < (uint32_t)16U; i++)
   {
     uint32_t *os = bl;
-    __attribute__((section(".secret"))) static uint32_t x;
+    static uint32_t __blinded x;
     x = bl[i] ^ k[i];
     os[i] = x;
   }
@@ -211,11 +213,11 @@ Hacl_Impl_Chacha20_chacha20_encrypt_block(
     store32_le(out + i * (uint32_t)4U, bl[i]);
   }
 }
-
+ 
 static inline void
 chacha20_encrypt_last(uint32_t *ctx, uint32_t len, uint8_t *out, uint32_t incr, uint8_t *text)
 {
-  __attribute__((section(".secret"))) static uint8_t plain[64U] = { 0U };
+ static uint8_t __blinded plain[64U] = { 0U };
   memcpy(plain, text, len * sizeof (uint8_t));
   Hacl_Impl_Chacha20_chacha20_encrypt_block(ctx, plain, incr, plain);
   memcpy(out, plain, len * sizeof (uint8_t));
@@ -250,7 +252,7 @@ Hacl_Chacha20_chacha20_encrypt(
   uint32_t ctr
 )
 {
-  __attribute__((section(".secret"))) static uint32_t ctx[16U] = { 0U };
+  static uint32_t __blinded ctx[16U] = { 0U };
   Hacl_Impl_Chacha20_chacha20_init(ctx, key, n, ctr);
   Hacl_Impl_Chacha20_chacha20_update(ctx, len, out, text);
 }
@@ -265,7 +267,7 @@ Hacl_Chacha20_chacha20_decrypt(
   uint32_t ctr
 )
 {
-  __attribute__((section(".secret"))) static uint32_t ctx[16U] = { 0U };
+  static uint32_t __blinded ctx[16U] = { 0U };
   Hacl_Impl_Chacha20_chacha20_init(ctx, key, n, ctr);
   Hacl_Impl_Chacha20_chacha20_update(ctx, len, out, cipher);
 }
