@@ -31,11 +31,8 @@
  * SUCH DAMAGE.
  */
 
-
-
- 
 /*
-* Ported to CHERI-ISAv9
+* Ported to CHERI-ISAv9, and blind the secret
 * @author Merve Gulmez 
 * @copyright © Ericsson AB 2025
 * 
@@ -43,13 +40,12 @@
 */
 
 /*
-* Ported to CHERI-ISAv9
+* Ported to CHERI-ISAv9, and blind the secret
 * @author Hossam ElAtali 
 * @copyright © Secure Systems Group 
 * 
 * SPDX-License-Identifier: BSD-2-Clause, Version 2.0
 */
-
 
 
 
@@ -329,9 +325,9 @@ kernel_funct_start:
     csetaddr ct6, csp, t2
     lui         a2,0xfffff 
     addiw       a2,a2,-1 
-    # candperm    ct6, ct6,a2
-    nop
-    nop
+    candperm    ct6, ct6,a2
+    # nop
+    # nop
     csd t4, 0(ct6)
     
     // jump to kernel_funct_cont

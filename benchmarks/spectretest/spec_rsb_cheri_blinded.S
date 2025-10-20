@@ -136,7 +136,7 @@ init_caps:
     csetbounds ct6, ct6, t1
     lui         a2,0xfffff 
     addiw       a2,a2,-1 
-    # candperm    ct6, ct6,a2 
+    candperm    ct6, ct6,a2 
 
 
     // cs7 is a capability to [0x80004000 - 0x80005000]
@@ -275,7 +275,7 @@ kernel_funct:
     // store secret
     lui         a2,0xfffff 
     addiw       a2,a2,-1 
-    # candperm    ct6, ct6,a2 
+    candperm    ct6, ct6,a2 
     csd t1, 0(ct6) 
     // return
     cret

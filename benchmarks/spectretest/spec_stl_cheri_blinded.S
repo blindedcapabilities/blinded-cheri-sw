@@ -31,12 +31,13 @@
  * SUCH DAMAGE.
  */
 
+
 /*
 * Ported to CHERI-ISAv9
 * @author Merve Gulmez 
 * @copyright © Ericsson AB 2025
 * 
-* SPDX-License-Identifier: BSD-2-Clause
+* SPDX-License-Identifier: BSD-2-Clause, Version 2.0
 */
 
 /*
@@ -44,7 +45,7 @@
 * @author Hossam ElAtali 
 * @copyright © Secure Systems Group 
 * 
-* SPDX-License-Identifier: BSD-2-Clause
+* SPDX-License-Identifier: BSD-2-Clause, Version 2.0
 */
 
 
@@ -160,7 +161,7 @@ init_caps:
     // store cs2 at 0(cs1)
     lui         a2,0xfffff 
     addiw       a2,a2,-1 
-    # candperm    cs2, cs2,a2 
+    candperm    cs2, cs2,a2 
     csc cs2, 0(cs1)
 
     // store secret at 0(cs2)
