@@ -1,5 +1,13 @@
 # See LICENSE for license details.
 
+#
+# changes for cheri-isa9 
+# @author Merve Gulmez 
+# @copyright © Ericsson AB 2025
+# 
+# SPDX-License-Identifier: Apache License, Version 2.0
+#
+
 #include "encoding.h"
 
 #if __riscv_xlen == 64
@@ -29,10 +37,16 @@ _start:
   cspecialrw      ct0, pcc, cnull
   li              t1, ((1<<3) | (1<<5))
   not             t1, t1
+#ifndef SPEC 
   candperm        ct0, ct0, t1
+#endif
   la              t2, zero_regs
   csetoffset      ct0, ct0, t2
+#ifdef __riscv_xcheri_mode_dependent_jumps
+  jr.cap          ct0
+#else
   cjr             ct0
+#endif
 #endif
 
 zero_regs:
@@ -151,16 +165,20 @@ zero_regs:
 
 #if __CHERI__
   cfromptr    csp, ddc, sp # Get DDC
+#ifndef SPEC
   csetbounds  csp, csp, tp
+#endif
   cincoffset  csp, csp, tp
 
   # Initialise the captable.
   cspecialrw      ct0, pcc, cnull # Get PCC
   la              t1, _start_purecap
   csetoffset      ct0, ct0, t1
-  li              t1, 1
-  csetflags       ct0, ct0, t1
+#ifdef __riscv_xcheri_mode_dependent_jumps
+  jalr.cap        cra, ct0
+#else
   cjalr           cra, ct0
+#endif
 
   # initialize trap vector
   cspecialr ct0, pcc
@@ -170,11 +188,13 @@ zero_regs:
   csetoffset ct0, ct0, t1 # ct0 still has PCC
   cspecialw mtcc, ct0
 
-.option capmode
-  clgc ct0, _init
-  li              t1, 1
-  csetflags       ct0, ct0, t1
-  cjr  ct0
+  la t1, _init
+  csetoffset       ct0, ct0, t1
+#ifdef __riscv_xcheri_mode_dependent_jumps
+  jalr.cap        cra, ct0
+#else
+  cjalr           cra, ct0
+#endif
 .option nocapmode
 #else
   add sp, sp, tp
@@ -186,11 +206,22 @@ zero_regs:
   .align 2
 trap_entry:
 #if __CHERI__
-.option capmode
+.option nocapmode
   csrr a0, mcause
   csrr a1, mepc
-  clgc ct0, handle_trap
-  cjr  ct0
+#ifdef SPEC
+.option capmode
+  cllc ct0, handle_trap
+.option nocapmode
+#else
+  la t1, handle_trap
+  csetoffset       ct0, ct0, t1
+#endif
+#ifdef __riscv_xcheri_mode_dependent_jumps
+  jalr.cap  ct0
+#else
+  cjalr     ct0
+#endif /* __riscv_xcheri_mode_dependent_jumps */
 .option nocapmode
 #endif
   addi sp, sp, -272
@@ -272,6 +303,8 @@ trap_entry:
   addi sp, sp, 272
   mret
 
+#ifndef SPEC
+
 .section ".tdata.begin"
 .globl _tdata_begin
 _tdata_begin:
@@ -283,3 +316,13 @@ _tdata_end:
 .section ".tbss.end"
 .globl _tbss_end
 _tbss_end:
+
+#endif
+
+.section ".tohost","aw",@progbits
+.align 6
+.globl tohost
+tohost: .dword 0
+.align 6
+.globl fromhost
+fromhost: .dword 0

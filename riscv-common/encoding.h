@@ -192,7 +192,7 @@
 #ifdef __GNUC__
 
 #define read_csr(reg) ({ unsigned long __tmp; \
-  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
+  __asm__ volatile ("csrr %0, " #reg : "=r"(__tmp)); \
   __tmp; })
 
 #define write_csr(reg, val) ({ \

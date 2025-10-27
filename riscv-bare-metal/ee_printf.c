@@ -573,6 +573,7 @@ void uart_send_char(char c) {
 
 int ee_printf(const char *fmt, ...)
 {
+#ifdef FPGA
   char buf[4096],*p;
   va_list args;
   int n=0;
@@ -586,7 +587,9 @@ int ee_printf(const char *fmt, ...)
 	n++;
 	p++;
   }
-
   return n;
+#else
+  return 1;
+#endif 
 }
 

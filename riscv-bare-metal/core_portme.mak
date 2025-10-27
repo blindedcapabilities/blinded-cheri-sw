@@ -14,22 +14,65 @@
 # 
 # Original Author: Shay Gal-on
 
+#
+# include more config option
+# @author Merve Gulmez 
+# @copyright © Ericsson AB 2025
+# 
+# SPDX-License-Identifier: Apache License, Version 2.0
+#
+
 #File : core_portme.mak
 
 # Allow users to override the UART's baud rate.
 UART_BAUD_RATE ?= 115200
 
 COMMON_DIR := ./riscv-common
+
+ifeq ($(FPGA), 1)
+LINKER_SCRIPT := $(COMMON_DIR)/p3_fpga.ld
+else 
+ifeq ($(SPEC), 1)
+LINKER_SCRIPT := $(COMMON_DIR)/spec_test.ld
+else 
 LINKER_SCRIPT := $(COMMON_DIR)/test.ld
+endif
+endif
+
+HOME_DIR = $(HOME)/cheri/
+
+ifeq ($(CHERI),1)
+SYSROOT_DIR = $(HOME_DIR)/output/sdk/baremetal/baremetal-newlib-riscv64-purecap/riscv64-unknown-elf
+else
+SYSROOT_DIR = $(HOME_DIR)/output/sdk/baremetal/baremetal-newlib-riscv64/riscv64-unknown-elf
+endif
+
+
+ifeq ($(TLSF), 1)
+	RISCV_FLAGS += -DTLSF
+endif
+
+ifeq ($(SPEC), 1)
+	RISCV_FLAGS += -DSPEC
+endif
+
+
+ifeq ($(BLINDED), 1)
+	RISCV_FLAGS += -DBLINDED
+endif
+
+ifeq ($(CHERI), 1)
+	RISCV_FLAGS += -DCHERI
+endif
 
 ifeq ($(CHERI),1)
 TOOLCHAIN:=LLVM
 endif
 
 ifeq ($(TOOLCHAIN),LLVM)
-CC      := clang
-OBJDUMP := llvm-objdump
-OBJCOPY := llvm-objcopy
+CC      := $(HOME_DIR)/output/sdk/bin/clang-15 -target riscv64-unknown-elf -mno-relax 
+OBJDUMP := $(HOME_DIR)/output/sdk/bin/llvm-objdump
+OBJCOPY := $(HOME_DIR)/output/sdk/bin/llvm-objcopy
 TOOLCHAIN_LINKER_FLAGS := -fuse-ld=lld
 ifndef SYSROOT_DIR
 $(error PLEASE define SYSROOT_DIR to where libc and run-time libs are installed)
@@ -52,7 +95,7 @@ ifeq ($(CHERI),1)
 else
 	RISCV_FLAGS += -target riscv32 -march=rv32im -mabi=ilp32
 endif
-	LIBS += -lc -lclang_rt.builtins-riscv32
+	LIBS += -lc $(HOME_DIR)/output/sdk/baremetal/baremetal-riscv64-purecap/lib/libclang_rt.builtins-riscv64.a
 else
 	RISCV_FLAGS += -march=rv32imac -mabi=ilp32
 endif
@@ -62,11 +105,11 @@ endif
 else ifeq ($(GFE_TARGET),P2)
 ifeq ($(TOOLCHAIN),LLVM)
 ifeq ($(CHERI),1)
-	RISCV_FLAGS += -target riscv64 -march=rv64rv64gcxcheri -mabi=l64pc128d
+	RISCV_FLAGS += -target riscv64 -march=rv64gcxcheri -mabi=l64pc128 -mno-xcheri-rvc
 else
 	RISCV_FLAGS += -target riscv64 -march=rv64imac -mabi=lp64
 endif
-	LIBS += -lc -lclang_rt.builtins-riscv64
+  LIBS += -lc $(HOME_DIR)output/sdk/baremetal/baremetal-riscv64-purecap/lib/libclang_rt.builtins-riscv64.a
 else
 	RISCV_FLAGS += -march=rv64imac -mabi=lp64
 endif
@@ -82,13 +125,18 @@ endif
 else ifeq ($(GFE_TARGET),P3)
 ifeq ($(TOOLCHAIN),LLVM)
 ifeq ($(CHERI),1)
-  RISCV_FLAGS += -target riscv64 -march=rv64imafdcxcheri -mabi=l64pc128d
+  RISCV_FLAGS += -target riscv64 -march=rv64gcxcheri -mabi=l64pc128d -mno-xcheri-rvc
+ifeq ($(FPGA),1)
+  RISCV_FLAGS += -DFPGA
+endif 
+  LIBS += -lm -lc -lclang_rt.builtins-riscv64 -L$(HOME_DIR)output/sdk/baremetal/baremetal-riscv64-purecap/lib/
 else
-  RISCV_FLAGS += -target riscv64 -march=rv64imac -mabi=lp64
-endif
-  LIBS += -lc -lclang_rt.builtins-riscv64
-else
-  RISCV_FLAGS += -march=rv64imac -mabi=lp64
+  RISCV_FLAGS += -target riscv64 -march=rv64gc -mabi=lp64d
+  LIBS += -lm -lc -lclang_rt.builtins-riscv64 -L$(HOME_DIR)output/sdk/baremetal/baremetal-riscv64/lib/
+
+endif 
+else 
+  RISCV_FLAGS += -march=rv64gc -mabi=lp64 -g
 endif
 # 25 MHz clock
 CLOCKS_PER_SEC := 25000000
@@ -106,7 +154,7 @@ PORT_CFLAGS = \
 	$(RISCV_FLAGS) \
 	-DCLOCKS_PER_SEC=$(CLOCKS_PER_SEC) \
 	-DUART_BAUD_RATE=$(UART_BAUD_RATE) \
-	-O2 \
+	-O3 \
 	-static \
 	-std=gnu99 \
 	-ffast-math \
@@ -122,7 +170,6 @@ CFLAGS = $(PORT_CFLAGS) -I$(PORT_DIR) -I. -DFLAGS_STR=\"$(FLAGS_STR)\"
 LFLAGS_END = \
 	-v \
 	-static \
-	-nostdlib \
 	-nostartfiles \
 	-lm \
 	$(LIBS) \
@@ -140,6 +187,9 @@ PORT_SRCS = \
 	$(PORT_DIR)/cvt.c \
 	$(PORT_DIR)/ee_printf.c
 
+ifeq ($(TLSF), 1)
+	PORT_SRCS += $(COMMON_DIR)/tlsf.c  
+endif
 # Flag : LOAD
 #	For a simple port, we assume self hosted compile and run, no load needed.
 

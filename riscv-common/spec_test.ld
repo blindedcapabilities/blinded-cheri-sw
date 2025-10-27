@@ -33,25 +33,37 @@ SECTIONS
   /* data segment */
   .data : { *(.data) }
 
-  .blinded : {
-    __start_blinded = .;
-    *(.blinded)
-    .gnu.linkonce.d.*
-    __stop_blinded = .;
-  }
-
-
   __cap_relocs : {
      . = ALIGN(8);
-     *(.cap_reloc)
   }
+
 
   .captable : {
      . = ALIGN(8);
   }
 
-  /* thread-local data segment */
-  .tdata :
+  .text : { *(.text) }
+  . = ALIGN(0x200);
+  .user : { *(.user) }
+  .kernel : { *(.kernel) }
+  . = 0x80003200;
+  .spec_btb_cheri_s : { *(.spec_btb_cheri_s) }
+  /* . = ALIGN(0x20000); */
+  . = ALIGN(0x8000000);
+  .spec_btb_cheri_u : { *(.spec_btb_cheri_u) }
+
+  .sdata : {
+    __global_pointer$ = . + 0x800;
+    *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata*)
+    *(.sdata .sdata.* .gnu.linkonce.s.*)
+  }
+
+  /* bss segment */
+  .sbss : {
+    *(.sbss .sbss.* .gnu.linkonce.sb.*)
+    *(.scommon)
+  }
+    .tdata :
   {
     . = ALIGN(8);
     _tls_data = .;
@@ -77,6 +89,13 @@ SECTIONS
     *(.tbss)
     *(.tbss.end)
     _end = .;
+  }
+
+  .blinded : {
+    __start_blinded = .;
+    *(.blinded)
+    .gnu.linkonce.d.*
+    __stop_blinded = .;
   }
 
   /* End of uninitalized data segement */

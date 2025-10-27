@@ -111,7 +111,9 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
 	ee_u8 stack_memblock[TOTAL_DATA_SIZE*MULTITHREAD];
 #endif
 	/* first call any initializations needed */
+#ifdef FPGA 
 	portable_init(&(results[0].port), &argc, argv);
+#endif 
 	/* First some checks to make sure benchmark will run ok */
 	if (sizeof(struct list_head_s)>128) {
 		ee_printf("list_head structure too big for comparable data!\n");
@@ -360,8 +362,11 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
 #endif
 	/* And last call any target specific code for finalizing */
 	portable_fini(&(results[0].port));
-
+#ifdef FPGA
 	return MAIN_RETURN_VAL;	
+#else 
+  return total_time;	
+#endif 
 }
 
 

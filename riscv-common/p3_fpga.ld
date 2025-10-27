@@ -22,13 +22,12 @@ SECTIONS
 {
 
   /* text: test code section */
-  . = 0x80000000;
+  . = 0xC0000000;
   .text.init : { *(.text.init) }
-  
-  . = ALIGN(0x1000);
-  .tohost : { *(.tohost) }
 
   .text : { *(.text) }
+
+
 
   /* data segment */
   .data : { *(.data) }
@@ -36,19 +35,18 @@ SECTIONS
   .blinded : {
     __start_blinded = .;
     *(.blinded)
-    .gnu.linkonce.d.*
     __stop_blinded = .;
   }
 
-
   __cap_relocs : {
      . = ALIGN(8);
-     *(.cap_reloc)
   }
 
   .captable : {
      . = ALIGN(8);
   }
+
+
 
   /* thread-local data segment */
   .tdata :

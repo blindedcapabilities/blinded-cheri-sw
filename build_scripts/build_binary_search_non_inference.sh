@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#
+# @author Merve Gulmez 
+# @copyright © Ericsson AB 2025
+# 
+# SPDX-License-Identifier: Apache License, Version 2.0
+#
+
 # Configuration
 
 

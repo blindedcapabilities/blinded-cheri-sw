@@ -15,6 +15,15 @@
 # Original Author: Shay Gal-on
 
 # Make sure the default target is to simply build and run the benchmark.
+
+#
+# Changes for the blinded capability
+# @author Merve Gulmez 
+# @copyright © Ericsson AB 2025
+# 
+# SPDX-License-Identifier: Apache License, Version 2.0
+#
+
 RSTAMP = v1.0
 
 .PHONY: run score
@@ -54,13 +63,15 @@ ifdef REBUILD
 FORCE_REBUILD=force_rebuild
 endif
 
-CFLAGS += -DITERATIONS=$(ITERATIONS)
+CFLAGS += -DITERATIONS=$(ITERATIONS) -std=c2x -g 
 
-CORE_FILES = core_list_join core_main core_matrix core_state core_util
-ORIG_SRCS = $(addsuffix .c,$(CORE_FILES))
+#CORE_FILES = core_list_join core_main core_matrix core_state core_util
+#CORE_FILES ?= /home/merve/cheri/blinded-cheri-sw/benchmarks/risc_oblivious_blinded/dnn
+ORIG_SRCS = $(CORE_FILES)
 SRCS = $(ORIG_SRCS) $(PORT_SRCS)
 OBJS = $(addprefix $(OPATH),$(addsuffix $(OEXT),$(CORE_FILES)) $(PORT_OBJS))
-OUTNAME = coremark$(EXE)
+# OUTNAME = coremark$(EXE)
+OUTNAME ?= $(OUT)$(EXE)
 OUTFILE = $(OPATH)$(OUTNAME)
 LOUTCMD = $(OFLAG) $(OUTFILE) $(LFLAGS_END)
 OUTCMD = $(OUTFLAG) $(OUTFILE) $(LFLAGS_END)
