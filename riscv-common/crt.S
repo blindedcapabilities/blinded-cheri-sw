@@ -172,6 +172,8 @@ zero_regs:
 
   # Initialise the captable.
   cspecialrw      ct0, pcc, cnull # Get PCC
+  li              t1, 1        # If capmode flag is not set here, the whole
+  csetflags       ct0, ct0, t1 # captable will be initialized without tags
   la              t1, _start_purecap
   csetoffset      ct0, ct0, t1
 #ifdef __riscv_xcheri_mode_dependent_jumps
